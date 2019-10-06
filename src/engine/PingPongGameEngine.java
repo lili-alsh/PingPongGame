@@ -95,6 +95,7 @@ public class PingPongGameEngine implements Runnable,
                         movingLeft=false;
                     }
                 }
+
                 // Шаг 2. Мяч движется вправо?
                 if ( !movingLeft && ballX <= BALL_MAX_X){
                     canBounce = (ballY >= kidRacket_Y && ballY <
