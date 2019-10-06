@@ -160,9 +160,11 @@ public class PingPongGameEngine implements Runnable,
         if (computerScore ==WINNING_SCORE){
             table.setMessageText("Computer won! " + computerScore +
                     ":" + kidScore);
+            endGame();
         }else if (kidScore ==WINNING_SCORE){
             table.setMessageText("You won! "+ kidScore +
                     ":" + computerScore);
+            endGame();
         }else{
             table.setMessageText("Computer: "+ computerScore +
                     " Kid: " + kidScore);
