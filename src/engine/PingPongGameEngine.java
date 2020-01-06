@@ -20,15 +20,16 @@ public class PingPongGameEngine implements Runnable,
     private int ballY; // координата Y мяча
     private boolean movingLeft = true;
     private boolean ballServed = false;
-
     //Значение вертикального передвижения мяча в пикселях
     private int verticalSlide;
+    Object obj;
 
     // Конструктор. Содержит ссылку на объект стола
     public PingPongGameEngine(PingPongGreenTable greenTable){
         table = greenTable;
-
-    }
+        Thread worker = new Thread(this);
+        worker.setName("Игра");
+        worker.start();}
     // Обязательные методы из интерфейса MouseMotionListener
     // (некоторые из них пустые,но должны быть включены все равно)
     public void mouseDragged(MouseEvent e) {
@@ -73,72 +74,82 @@ public class PingPongGameEngine implements Runnable,
     }
     // Обязательный метод run() из интерфейса Runnable
     public void run(){
-        boolean canBounce=false;
-        while (true) {
-            if(ballServed){ // если мяч движется!!!!
-                //Шаг 1. Мяч движется влево?
-                if ( movingLeft && ballX > BALL_MIN_X){
-                    canBounce = (ballY >= computerRacket_Y &&
-                            ballY < (computerRacket_Y + RACKET_LENGTH)?true: false);
-                    ballX-=BALL_INCREMENT;
-                    // Если мяч летит в верх или низ стола, то он отскакивает
-                    if (ballY==TABLE_TOP || ballY==TABLE_BOTTOM) {
-                        ballY+=verticalSlide;
-                    }else{
-                        // Добавить смещение вверх или вниз к любым
-                        // движениям мяча влево или вправо
-                        ballY-=verticalSlide;
-                    }
-                    table.setBallPosition(ballX,ballY);
-                    // Может отскочить?
-                    if (ballX <= COMPUTER_RACKET_X && canBounce){
-                        movingLeft=false;
-                    }
-                }
+        obj=new Object();
+        System.out.println("Запустился метод run в потоке "+Thread.currentThread().getName());
+            boolean canBounce = false;
+            while (true) {
+                synchronized (obj) {
+                    if (ballServed) { // если мяч движется!!!!
+                        table.getKidRacket_Y();
+                        //Шаг 1. Мяч движется влево?
+                        if (movingLeft && ballX > BALL_MIN_X) {
+                            canBounce = (ballY >= computerRacket_Y &&
+                                    ballY < (computerRacket_Y + RACKET_LENGTH) ? true : false);
+                            ballX -= BALL_INCREMENT;
+                            // Если мяч летит в верх или низ стола, то он отскакивает
+                            if (ballY==TABLE_BOTTOM || ballY==TABLE_TOP) {
+                                ballY += verticalSlide;
+                            } else
+                                ballY-=verticalSlide;
+                            // Добавить смещение вверх или вниз к любым
+                            // движениям мяча влево или вправо
 
-                // Шаг 2. Мяч движется вправо?
-                if ( !movingLeft && ballX <= BALL_MAX_X){
-                    canBounce = (ballY >= kidRacket_Y && ballY <
-                            (kidRacket_Y + RACKET_LENGTH)?true:false);
-                    ballX+=BALL_INCREMENT;
-                    ballY+=verticalSlide;
-                    // Если мяч летит в низ стола, то он отскакивает
-                    if (ballY==TABLE_BOTTOM){
-                        ballY-=verticalSlide;
-                    }
-                    table.setBallPosition(ballX,ballY);
-                    // Может отскочить?
-                    if (ballX >= KID_RACKET_X && canBounce){
-                        movingLeft=true;
-                    }
+                            table.setBallPosition(ballX, ballY);
+                            // Может отскочить?
+                            if (ballX <= COMPUTER_RACKET_X && canBounce) {
+                                movingLeft = false;
+                            }
+                        }
+                        // Шаг 2. Мяч движется вправо?
+                        if (!movingLeft && ballX <= BALL_MAX_X) {
+                            canBounce = (ballY >= kidRacket_Y && ballY <
+                                    (kidRacket_Y + RACKET_LENGTH) ? true : false);
+                            ballX += BALL_INCREMENT;
+                            // Если мяч летит в низ стола, то он отскакивает
+                            if (ballY<TABLE_HEIGHT/2){
+                                do ballY+=1;
+                                while(ballY==TABLE_BOTTOM);
+                                ballY-=1;
+                            }
+                            else
+                               do ballY -= 1;
+                               while (ballY==TABLE_TOP);
+                               ballY+=1;
+                            table.setBallPosition(ballX, ballY);
+                            // Может отскочить?
+                            if (ballX >= KID_RACKET_X && canBounce) {
+                                movingLeft = true;
+                            }
+                        }
+                        // Шаг 3. Перемещать ракетку компьютера вверх или вниз,
+                        // чтобы блокировать мяч
+                        if (computerRacket_Y < ballY
+                                && computerRacket_Y < TABLE_BOTTOM) {
+                            computerRacket_Y += RACKET_INCREMENT;
+                        } else if (computerRacket_Y > TABLE_TOP) {
+                            computerRacket_Y -= RACKET_INCREMENT;
+                        }
+                        table.setComputerRacket_Y(computerRacket_Y);
+                        // Шаг 4. Приостановить
+                        try {
+                            Thread.sleep(SLEEP_TIME);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        // Шаг 5. Обновить счет, если мячв зеленой области, но не движется
+                        if (isBallOnTheTable()) {
+                            if (ballX > BALL_MAX_X) {
+                                computerScore++;
+                                displayScore();
+                            } else if (ballX < BALL_MIN_X) {
+                                kidScore++;
+                                displayScore();
+                            }
+                        }
+                    } // Конец if ballServed
                 }
-                // Шаг 3. Перемещать ракетку компьютера вверх или вниз,
-                // чтобы блокировать мяч
-                if (computerRacket_Y < ballY
-                        && computerRacket_Y < TABLE_BOTTOM){
-                    computerRacket_Y +=RACKET_INCREMENT;
-                }else if (computerRacket_Y > TABLE_TOP){
-                    computerRacket_Y -=RACKET_INCREMENT;
-                }
-                table.setComputerRacket_Y(computerRacket_Y);
-                // Шаг 4. Приостановить
-                try {
-                    Thread.sleep(SLEEP_TIME);
-                } catch (InterruptedException e) {
-                    e.printStackTrace();
-                }
-                // Шаг 5. Обновить счет, если мячв зеленой области, но не движется
-                if (isBallOnTheTable()){
-                    if (ballX > BALL_MAX_X ){
-                        computerScore++;
-                        displayScore();
-                    }else if (ballX < BALL_MIN_X){
-                        kidScore++;
-                        displayScore();
-                    }
-                }
-            } // Конец if ballServed
-        } // Конец while
+            } // Конец while
+
     }// Конец run()// Подать с текущей позиции ракетки ребенка
     private void kidServe(){
         ballServed = true;
@@ -152,8 +163,7 @@ public class PingPongGameEngine implements Runnable,
         }
         table.setBallPosition(ballX,ballY);
         table.setKidRacket_Y(kidRacket_Y);
-        Thread worker = new Thread(this);
-        worker.start();
+        System.out.println("После подачи мяча запустился поток "+Thread.currentThread().getName());
     }
     private void displayScore(){
         ballServed = false;
