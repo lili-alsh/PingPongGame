@@ -28,7 +28,6 @@ public class PingPongGameEngine implements Runnable,
     public PingPongGameEngine(PingPongGreenTable greenTable){
         table = greenTable;
         Thread worker = new Thread(this);
-        worker.setName("Игра");
         worker.start();}
     // Обязательные методы из интерфейса MouseMotionListener
     // (некоторые из них пустые,но должны быть включены все равно)
@@ -75,7 +74,6 @@ public class PingPongGameEngine implements Runnable,
     // Обязательный метод run() из интерфейса Runnable
     public void run(){
         obj=new Object();
-        System.out.println("Запустился метод run в потоке "+Thread.currentThread().getName());
             boolean canBounce = false;
             while (true) {
                 synchronized (obj) {
@@ -159,7 +157,6 @@ public class PingPongGameEngine implements Runnable,
         }
         table.setBallPosition(ballX,ballY);
         table.setKidRacket_Y(kidRacket_Y);
-        System.out.println("После подачи мяча запустился поток "+Thread.currentThread().getName());
     }
     private void displayScore(){
         ballServed = false;
