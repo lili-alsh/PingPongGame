@@ -25,8 +25,8 @@ hs_err_pid*
 =======
 touch .gitignore
 echo ".idea" > .gitignore
-git rm -r -f --cached .
-git add .
+git rm -r --cached .idea
+git add .gitignore
 git commit -m "Remove files"
 git push -u origin master
 >>>>>>> Убрала ненужные выводыв консоль
