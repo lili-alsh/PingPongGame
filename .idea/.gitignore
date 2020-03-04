@@ -1,0 +1,6 @@
+echo .idea > gitignore
+echo out/ >> gitignore
+echo PingPongGame.iml >> gitignore
+git add .gitignore
+git commit -m "added gitignore files"
+git push origin master
