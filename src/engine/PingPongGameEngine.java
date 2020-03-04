@@ -80,7 +80,6 @@ public class PingPongGameEngine implements Runnable,
             while (true) {
                 synchronized (obj) {
                     if (ballServed) { // если мяч движется!!!!
-                        table.getKidRacket_Y();
                         //Шаг 1. Мяч движется влево?
                         if (movingLeft && ballX > BALL_MIN_X) {
                             canBounce = (ballY >= computerRacket_Y &&
@@ -88,9 +87,11 @@ public class PingPongGameEngine implements Runnable,
                             ballX -= BALL_INCREMENT;
                             // Если мяч летит в верх или низ стола, то он отскакивает
                             if (ballY==TABLE_BOTTOM || ballY==TABLE_TOP) {
-                                ballY += verticalSlide;
-                            } else
+                                ballY+=verticalSlide;
+                                //System.out.println(ballY);
+                            } else {
                                 ballY-=verticalSlide;
+                            }
                             // Добавить смещение вверх или вниз к любым
                             // движениям мяча влево или вправо
 
@@ -106,15 +107,10 @@ public class PingPongGameEngine implements Runnable,
                                     (kidRacket_Y + RACKET_LENGTH) ? true : false);
                             ballX += BALL_INCREMENT;
                             // Если мяч летит в низ стола, то он отскакивает
-                            if (ballY<TABLE_HEIGHT/2){
-                                do ballY+=1;
-                                while(ballY==TABLE_BOTTOM);
-                                ballY-=1;
+                            ballY-=verticalSlide;
+                            if (ballY==TABLE_TOP || ballY==TABLE_BOTTOM){
+                                verticalSlide=verticalSlide*(-1);
                             }
-                            else
-                               do ballY -= 1;
-                               while (ballY==TABLE_TOP);
-                               ballY+=1;
                             table.setBallPosition(ballX, ballY);
                             // Может отскочить?
                             if (ballX >= KID_RACKET_X && canBounce) {

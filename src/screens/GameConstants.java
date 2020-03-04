@@ -9,7 +9,7 @@ public interface GameConstants {
     public final int TABLE_BOTTOM = 180;
 
     // Шаг перемещения мяча в пикселях
-    public final int BALL_INCREMENT = 5;
+    public final int BALL_INCREMENT = 4;
 
     // Максимальные и минимальные координаты мяча
     public final int BALL_MIN_X = 1+ BALL_INCREMENT;
